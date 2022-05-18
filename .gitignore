@@ -4,6 +4,7 @@
 .vscode/
 .DS_Store
 out
+main
 
 # Binaries, plugins, libs
 *.dll
