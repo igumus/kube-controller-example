@@ -6,13 +6,13 @@ import (
 	"log"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	appslister "k8s.io/client-go/listers/apps/v1"
-
-	corev1 "k8s.io/api/core/v1"
 
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
@@ -75,6 +75,7 @@ func (c *deploymentController) addEventHandler(obj interface{}) {
 
 func (c *deploymentController) deleteEventHandler(obj interface{}) {
 	log.Println("info: delete event handler triggered")
+	c.queue.Add(obj)
 }
 
 func (c *deploymentController) worker() {
@@ -107,12 +108,39 @@ func (c *deploymentController) processItem() bool {
 	log.Printf("todo: handle creation/deletion logic")
 
 	ctx := context.Background()
-	if _, err = c.createService(ctx, ns, name); err != nil {
-		log.Printf("err: service creation for deployment(%s,%s) failed: %s\n", ns, name, err.Error())
-		return false
+	if c.isDeploymentDeleted(ctx, ns, name) {
+		if err := c.deleteService(ctx, ns, name); err != nil {
+			log.Printf("err: service deletion for deployment(%s,%s) failed: %s\n", ns, name, err.Error())
+			return false
+		}
+		return true
+	} else {
+		if _, err = c.createService(ctx, ns, name); err != nil {
+			log.Printf("err: service creation for deployment(%s,%s) failed: %s\n", ns, name, err.Error())
+			return false
+		}
+		return true
 	}
+}
 
-	return true
+func (c *deploymentController) isDeploymentDeleted(ctx context.Context, ns, name string) bool {
+	_, err := c.clientset.AppsV1().Deployments(ns).Get(ctx, name, metav1.GetOptions{})
+	return apierrors.IsNotFound(err)
+}
+
+func (c *deploymentController) deleteService(ctx context.Context, ns, name string) error {
+	svc, err := c.clientset.CoreV1().Services(ns).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	value, ok := svc.Spec.Selector["app"]
+	if !ok || value != name {
+		if c.debug {
+			log.Printf("debug: skipping service deletion: %s, %s\n", svc.Name, svc.Namespace)
+		}
+		return errors.New("skipping deletion service")
+	}
+	return c.clientset.CoreV1().Services(ns).Delete(ctx, name, metav1.DeleteOptions{})
 }
 
 func (c *deploymentController) createService(ctx context.Context, ns, name string) (*corev1.Service, error) {
@@ -126,9 +154,6 @@ func (c *deploymentController) createService(ctx context.Context, ns, name strin
 		return nil, errors.New("deployment is not interested with the controller")
 	}
 
-	// create service
-	// we have to modify this, to figure out the port
-	// our deployment's container is listening on
 	svc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      deployment.Name,
