@@ -1,9 +1,9 @@
+env:
+  - GO111MODULE=on
+
 before:
   hooks:
-    # You may remove this if you don't use go modules.
     - go mod tidy
-    # you may remove this if you don't need go generate
-    - go generate ./...
 builds:
   - main: ./cmd/outcluster/main.go
     id: "outcluster"
@@ -29,7 +29,7 @@ builds:
       - CGO_ENABLED=0
 
 dockers:
-- image_templates: ["igumus/controller:{{ .Version }}-amd64"]
+- image_templates: ["igumus/controller:{{ .Version }}"]
   dockerfile: Dockerfile
   use: buildx
   ids:
@@ -43,7 +43,7 @@ dockers:
   - --label=org.opencontainers.image.version={{ .Version }}
   - --label=org.opencontainers.image.revision={{ .FullCommit }}
   - --label=org.opencontainers.image.licenses=MIT
-- image_templates: ["igumus/controller:{{ .Version }}-arm64v8"]
+- image_templates: ["igumus/controller:{{ .Version }}"]
   goarch: arm64
   dockerfile: Dockerfile
   use: buildx
@@ -58,3 +58,21 @@ dockers:
   - --label=org.opencontainers.image.version={{ .Version }}
   - --label=org.opencontainers.image.revision={{ .FullCommit }}
   - --label=org.opencontainers.image.licenses=MIT
+
+source:
+  enabled: false
+
+changelog:
+  skip: true
+
+archives:
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      amd64: x86_64
+    builds:
+      - outcluster
+    format_overrides:
+      - goos: windows
+        format: zip

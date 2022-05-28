@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ctr
+  name: ctr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ctr
+  template:
+    metadata:
+      labels:
+        app: ctr
+    spec:
+      containers:
+      - image: igumus/controller:v1.0.0
+        name: controller
