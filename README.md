@@ -22,5 +22,5 @@ Under `cmd` folder there are two types of execution styles.
     ```
 2. [InClusterAPI](cmd/incluster/main.go) which is executed/deployed inside the cluster via container image
     ```
-    kubectl create -f manifests/deployment.yaml
+    kubectl create -f manifests/
     ```
