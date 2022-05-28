@@ -103,8 +103,6 @@ func (c *deploymentController) processItem() bool {
 		log.Printf("splitting key into namespace and name %s\n", err.Error())
 		return false
 	}
-	log.Printf("todo: handle creation/deletion logic")
-
 	ctx := context.Background()
 	if c.isDeploymentDeleted(ctx, ns, name) {
 		if err := c.deleteService(ctx, ns, name); err != nil {
