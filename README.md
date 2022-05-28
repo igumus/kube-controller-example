@@ -16,9 +16,9 @@ A custom Kubernetes Controller example to watch Deployments in all namespaces to
 
 Under `cmd` folder there are two types of execution styles.
 
-1. [RemoteAPI](cmd/kconfig/main.go) which is executed/deployed outside the cluster (uses kubeconfig file)
+1. [RemoteAPI](cmd/outcluster/main.go) which is executed/deployed outside the cluster (uses kubeconfig file)
     ```
-    ./main -kubeconfig ~/.kube/config
+    ./omain -kubeconfig ~/.kube/config
     ```
 2. [InClusterAPI](cmd/incluster/main.go) which is executed/deployed inside the cluster via container image
     ```
