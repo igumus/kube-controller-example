@@ -1,5 +1,5 @@
 FROM scratch
 
-COPY ./kmain /kmain
+COPY ./imain /imain
 
-ENTRYPOINT [ "/kmain" ] 
+ENTRYPOINT [ "/imain" ] 
