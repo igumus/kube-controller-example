@@ -9,6 +9,8 @@ clean: ## Clean project
 ## BinaryBuild:
 build-remote-binary: ## Build project (arm64)
 	goreleaser build --snapshot --id outcluster --single-target --rm-dist
+build-local-binary: ## Build local binary for dev
+	rm -vf main && go build cmd/outcluster/main.go
 
 ## Help:
 help: ## Show this help.

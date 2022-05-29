@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   labels:
     app: nginx
+    mode: autoExpose
   name: nginx
 spec:
   replicas: 1
