@@ -34,6 +34,7 @@ func NewController(debugMode bool, cfg *rest.Config) (DeploymentController, erro
 	if err := ret.initClientSet(cfg); err != nil {
 		return nil, err
 	}
+	ret.initInformerFactory()
 	ret.initDeploymentInformer()
 	return ret, nil
 }
@@ -50,11 +51,12 @@ func (c *deploymentController) initClientSet(cfg *rest.Config) error {
 	return nil
 }
 
-func (c *deploymentController) initDeploymentInformer() {
-	informer := informers.NewSharedInformerFactory(c.clientset, 10*time.Minute)
-	c.informer = informer
-	deploymentInformer := c.informer.Apps().V1().Deployments()
+func (c *deploymentController) initInformerFactory() {
+	c.informer = informers.NewSharedInformerFactory(c.clientset, 10*time.Minute)
+}
 
+func (c *deploymentController) initDeploymentInformer() {
+	deploymentInformer := c.informer.Apps().V1().Deployments()
 	c.deploymentLister = deploymentInformer.Lister()
 	c.deploymentCacheSynced = deploymentInformer.Informer().HasSynced
 
