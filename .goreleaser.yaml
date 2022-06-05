@@ -29,7 +29,7 @@ builds:
       - CGO_ENABLED=0
 
 dockers:
-- image_templates: ["igumus/controller:{{ .Version }}"]
+- image_templates: ["igumus/controller:{{ .Version }}-amd64"]
   dockerfile: Dockerfile
   use: buildx
   ids:
@@ -43,7 +43,7 @@ dockers:
   - --label=org.opencontainers.image.version={{ .Version }}
   - --label=org.opencontainers.image.revision={{ .FullCommit }}
   - --label=org.opencontainers.image.licenses=MIT
-- image_templates: ["igumus/controller:{{ .Version }}"]
+- image_templates: ["igumus/controller:{{ .Version }}-arm64v8"]
   goarch: arm64
   dockerfile: Dockerfile
   use: buildx
@@ -58,6 +58,16 @@ dockers:
   - --label=org.opencontainers.image.version={{ .Version }}
   - --label=org.opencontainers.image.revision={{ .FullCommit }}
   - --label=org.opencontainers.image.licenses=MIT
+
+docker_manifests:
+- name_template: igumus/controller:{{ .Version }}
+  image_templates:
+  - igumus/controller:{{.Version}}-amd64
+  - igumus/controller:{{.Version}}-arm64v8
+- name_template: igumus/controller:latest
+  image_templates:
+  - igumus/controller:{{.Version}}-amd64
+  - igumus/controller:{{.Version}}-arm64v8
 
 source:
   enabled: false
